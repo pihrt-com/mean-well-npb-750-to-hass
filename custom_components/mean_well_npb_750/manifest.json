@@ -1,0 +1,10 @@
+﻿{
+  "domain": "mean_well_npb_750",
+  "name": "Mean Well NPB-750",
+  "codeowners": [],
+  "config_flow": true,
+  "documentation": "https://github.com/pihrt/mean-well-npb-750-to-hass",
+  "iot_class": "local_polling",
+  "requirements": ["pyserial==3.5"],
+  "version": "0.1.0"
+}

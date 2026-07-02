@@ -1,0 +1,16 @@
+﻿{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Mean Well NPB-750",
+        "description": "Pripojeni nabijecky Mean Well NPB-750 pres seriovy adapter Waveshare USB-CAN-A.",
+        "data": {
+          "device": "Seriove zarizeni",
+          "address": "CAN adresa nabijecky",
+          "can_bitrate": "Rychlost CAN",
+          "serial_baudrate": "Rychlost seriove linky"
+        }
+      }
+    }
+  }
+}

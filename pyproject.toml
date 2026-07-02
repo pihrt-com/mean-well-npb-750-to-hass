@@ -1,0 +1,10 @@
+﻿[project]
+name = "mean-well-npb-750-to-hass"
+version = "0.1.0"
+description = "Home Assistant custom integration for MEAN WELL NPB-750 through Waveshare USB-CAN-A"
+requires-python = ">=3.12"
+dependencies = ["pyserial==3.5"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"

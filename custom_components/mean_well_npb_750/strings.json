@@ -1,0 +1,16 @@
+﻿{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Mean Well NPB-750",
+        "description": "Connect to a Mean Well NPB-750 charger through a Waveshare USB-CAN-A serial adapter.",
+        "data": {
+          "device": "Serial device",
+          "address": "Charger CAN address",
+          "can_bitrate": "CAN bitrate",
+          "serial_baudrate": "Serial baudrate"
+        }
+      }
+    }
+  }
+}

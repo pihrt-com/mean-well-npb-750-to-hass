@@ -51,7 +51,6 @@ class Register:
     precision: int
 
 READ_REGISTERS: tuple[Register, ...] = (
-    Register("input_voltage", "Input voltage", Command.READ_VIN, 0.1, "V", 1),
     Register("output_voltage", "Output voltage", Command.READ_VOUT, 0.01, "V", 2),
     Register("output_current", "Output current", Command.READ_IOUT, 0.01, "A", 2),
     Register("temperature", "Internal temperature", Command.READ_TEMPERATURE_1, 0.1, "degC", 1),

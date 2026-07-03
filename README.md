@@ -141,7 +141,6 @@ Serial baudrate: 2000000
 
 The integration creates:
 
-- input voltage sensor
 - output voltage sensor
 - output current sensor
 - internal temperature sensor
@@ -153,6 +152,8 @@ The integration creates:
 - output current setpoint number entity
 
 Note: according to the MEAN WELL manual, `VOUT_SET` and `IOUT_SET` are mainly useful in power-supply mode. In charger mode, the charger may ignore some setpoint commands depending on its current configuration.
+
+The NPB-750 command table marks `READ_VIN` (`0x0050`) as unsupported/problematic for this model family, so input voltage is not polled by default.
 
 ## Protocol Notes
 

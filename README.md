@@ -2,6 +2,8 @@
 
 Home Assistant custom integration for the **MEAN WELL NPB-750-24** intelligent battery charger connected through a **Waveshare USB-CAN-A** serial-to-CAN adapter.
 
+![Mean Well NPB-750 integration icon](custom_components/mean_well_npb_750/brand/icon.png)
+
 [![Open your Home Assistant instance and add this repository to HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=pihrt-com&repository=mean-well-npb-750-to-hass&category=integration)
 
 Direct HACS repository link:

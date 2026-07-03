@@ -17,7 +17,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         await coordinator.async_connect()
     except Exception as err:  # noqa: BLE001
         raise ConfigEntryNotReady(
-            f"USB-CAN adapter was not found or could not be opened at {entry.data.get('device')}: {err}"
+            f"USB-CAN prevodnik nebyl nalezen nebo ho nelze otevrit na {entry.data.get('device')}: {err}"
         ) from err
 
     try:
@@ -25,8 +25,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     except ConfigEntryNotReady as err:
         await coordinator.async_shutdown()
         raise ConfigEntryNotReady(
-            "USB-CAN adapter was found and opened, but the MEAN WELL charger is not responding on CAN. "
-            "Connect and power the charger, then check CANH/CANL/GND wiring, termination, CAN address, and bitrate."
+            "USB-CAN prevodnik byl nalezen a otevren, ale nabijecka MEAN WELL neodpovida na CAN. "
+            "Pripojte a zapnete nabijecku, potom zkontrolujte zapojeni CANH/CANL/GND, terminaci, CAN adresu a rychlost."
         ) from err
 
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = coordinator

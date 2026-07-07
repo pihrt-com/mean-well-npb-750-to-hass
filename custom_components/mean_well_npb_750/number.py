@@ -38,6 +38,10 @@ class MeanWellNumber(MeanWellEntity, NumberEntity):
         value = self.coordinator.data.get("output_voltage" if self.entity_description.key == "output_voltage_set" else "output_current")
         return float(value) if isinstance(value, int | float) else None
 
+    @property
+    def available(self) -> bool:
+        return super().available and bool(self.coordinator.data.get("charger_connected"))
+
     async def async_set_native_value(self, value: float) -> None:
         method = getattr(self.coordinator, self.entity_description.method)
         await method(value)

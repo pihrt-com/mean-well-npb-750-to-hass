@@ -20,14 +20,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             f"USB-CAN prevodnik nebyl nalezen nebo ho nelze otevrit na {entry.data.get('device')}: {err}"
         ) from err
 
-    try:
-        await coordinator.async_config_entry_first_refresh()
-    except ConfigEntryNotReady as err:
-        await coordinator.async_shutdown()
-        raise ConfigEntryNotReady(
-            "USB-CAN prevodnik byl nalezen a otevren, ale nabijecka MEAN WELL neodpovida na CAN. "
-            "Pripojte a zapnete nabijecku, potom zkontrolujte zapojeni CANH/CANL/GND, terminaci, CAN adresu a rychlost."
-        ) from err
+    await coordinator.async_config_entry_first_refresh()
 
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = coordinator
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)

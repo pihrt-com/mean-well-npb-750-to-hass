@@ -8,7 +8,7 @@ import logging
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
+from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
 from .charger import ChargerIdentity, MeanWellNpbCharger
 from .commands import CHARGE_STATUS_BITS, FAULT_BITS, READ_REGISTERS
@@ -23,7 +23,11 @@ class MeanWellCoordinator(DataUpdateCoordinator[dict[str, object]]):
     def __init__(self, hass: HomeAssistant, entry: ConfigEntry) -> None:
         self.entry = entry
         self.identity = ChargerIdentity()
-        self.charger = MeanWellNpbCharger(WaveshareUsbCan(entry.data["device"], entry.data.get(CONF_SERIAL_BAUDRATE, DEFAULT_SERIAL_BAUDRATE), entry.data.get(CONF_CAN_BITRATE, DEFAULT_CAN_BITRATE)), entry.data.get(CONF_ADDRESS, DEFAULT_ADDRESS))
+        self.device = entry.data["device"]
+        self.serial_baudrate = entry.data.get(CONF_SERIAL_BAUDRATE, DEFAULT_SERIAL_BAUDRATE)
+        self.can_bitrate = entry.data.get(CONF_CAN_BITRATE, DEFAULT_CAN_BITRATE)
+        self.address = entry.data.get(CONF_ADDRESS, DEFAULT_ADDRESS)
+        self.charger = MeanWellNpbCharger(WaveshareUsbCan(self.device, self.serial_baudrate, self.can_bitrate), self.address)
         super().__init__(hass, _LOGGER, name="Mean Well NPB-750", update_interval=timedelta(seconds=entry.options.get("scan_interval", DEFAULT_SCAN_INTERVAL)))
 
     async def async_connect(self) -> None:
@@ -37,28 +41,65 @@ class MeanWellCoordinator(DataUpdateCoordinator[dict[str, object]]):
         await asyncio.to_thread(self.charger.close)
 
     async def _async_update_data(self) -> dict[str, object]:
-        try:
-            return await asyncio.to_thread(self._read_data)
-        except Exception as err:  # noqa: BLE001
-            raise UpdateFailed(str(err)) from err
+        return await asyncio.to_thread(self._read_data)
 
     def _read_data(self) -> dict[str, object]:
-        data: dict[str, object] = {}
+        data: dict[str, object] = self._base_data()
         raw: dict[str, int] = {}
-        for register in READ_REGISTERS:
-            value = self.charger.read_register(register.command, 2)
-            raw[register.key] = value
-            data[register.key] = value if register.scale == 1 else round(value * register.scale, register.precision)
         try:
-            data["operation"] = self.charger.read_operation()
+            for register in READ_REGISTERS:
+                value = self.charger.read_register(register.command, 2)
+                raw[register.key] = value
+                data[register.key] = value if register.scale == 1 else round(value * register.scale, register.precision)
+            try:
+                data["operation"] = self.charger.read_operation()
+            except Exception as err:  # noqa: BLE001
+                _LOGGER.debug("Could not read operation state: %s", err)
+            fault_status = int(data.get("fault_status", 0))
+            charge_status = int(data.get("charge_status", 0))
+            data["faults"] = [name for bit, name in FAULT_BITS.items() if fault_status & (1 << bit)]
+            data["charge_flags"] = [name for bit, name in CHARGE_STATUS_BITS.items() if charge_status & (1 << bit)]
+            data["charger_connected"] = True
+            data["charger_status"] = "Nabijecka MEAN WELL odpovida na CAN"
+            data["last_error"] = None
         except Exception as err:  # noqa: BLE001
-            _LOGGER.debug("Could not read operation state: %s", err)
-        fault_status = int(data.get("fault_status", 0))
-        charge_status = int(data.get("charge_status", 0))
-        data["faults"] = [name for bit, name in FAULT_BITS.items() if fault_status & (1 << bit)]
-        data["charge_flags"] = [name for bit, name in CHARGE_STATUS_BITS.items() if charge_status & (1 << bit)]
+            _LOGGER.debug("Charger did not answer: %s", err)
+            data["charger_connected"] = False
+            data["charger_status"] = "Nabijecka MEAN WELL neodpovida na CAN"
+            data["last_error"] = (
+                "USB-CAN prevodnik byl nalezen a otevren, ale nabijecka MEAN WELL neodpovida na CAN. "
+                "Zkontrolujte napajeni nabijecky, CANH/CANL/GND, terminaci, adresu a rychlost CAN."
+            )
+            data["faults"] = []
+            data["charge_flags"] = []
         data["raw"] = raw
         return data
+
+    def _base_data(self) -> dict[str, object]:
+        return {
+            "adapter_connected": True,
+            "adapter_status": "USB-CAN prevodnik nalezen a otevren",
+            "charger_connected": False,
+            "charger_status": "Nabijecka MEAN WELL zatim neoverena",
+            "last_error": None,
+            "can_settings": f"CAN {self.can_bitrate} bit/s, extended frame, address {self.address}",
+            "device_path": self.device,
+            "serial_settings": f"Serial {self.serial_baudrate} bit/s",
+        }
+
+    async def async_test_adapter(self) -> None:
+        await asyncio.to_thread(self.charger.configure_adapter)
+        self.async_set_updated_data(
+            {
+                **(self.data or self._base_data()),
+                "adapter_connected": True,
+                "adapter_status": "USB-CAN prevodnik odpovedel na otevreni a konfiguraci",
+                "last_error": None,
+            }
+        )
+
+    async def async_test_charger(self) -> None:
+        await self.async_request_refresh()
 
     async def async_set_operation(self, enabled: bool) -> None:
         await asyncio.to_thread(self.charger.write_operation, enabled)

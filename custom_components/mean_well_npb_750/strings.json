@@ -12,5 +12,33 @@
         }
       }
     }
+  },
+  "entity": {
+    "sensor": {
+      "adapter_status": {"name": "USB-CAN adapter status"},
+      "charger_status": {"name": "Charger status"},
+      "last_error": {"name": "Last communication message"},
+      "can_settings": {"name": "CAN settings"},
+      "device_path": {"name": "Serial device"},
+      "faults": {"name": "Faults"},
+      "charge_flags": {"name": "Charge flags"},
+      "output_voltage": {"name": "Output voltage"},
+      "output_current": {"name": "Output current"},
+      "temperature": {"name": "Internal temperature"},
+      "fault_status": {"name": "Fault status"},
+      "charge_status": {"name": "Charge status"},
+      "system_status": {"name": "System status"}
+    },
+    "button": {
+      "test_adapter": {"name": "Test USB-CAN adapter"},
+      "test_charger": {"name": "Test charger communication"}
+    },
+    "switch": {
+      "output": {"name": "Output"}
+    },
+    "number": {
+      "output_voltage_set": {"name": "Output voltage set"},
+      "output_current_set": {"name": "Output current set"}
+    }
   }
 }

@@ -36,6 +36,10 @@ class MeanWellNpbCharger:
     def connect(self) -> None:
         self._adapter.open()
 
+    def configure_adapter(self) -> None:
+        self._adapter.open()
+        self._adapter.configure()
+
     def close(self) -> None:
         self._adapter.close()
 

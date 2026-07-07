@@ -12,5 +12,33 @@
         }
       }
     }
+  },
+  "entity": {
+    "sensor": {
+      "adapter_status": {"name": "Stav USB-CAN prevodniku"},
+      "charger_status": {"name": "Stav nabijecky"},
+      "last_error": {"name": "Posledni zprava komunikace"},
+      "can_settings": {"name": "Nastaveni CAN"},
+      "device_path": {"name": "Seriove zarizeni"},
+      "faults": {"name": "Chyby"},
+      "charge_flags": {"name": "Stav nabijeni"},
+      "output_voltage": {"name": "Vystupni napeti"},
+      "output_current": {"name": "Vystupni proud"},
+      "temperature": {"name": "Vnitrni teplota"},
+      "fault_status": {"name": "Chybovy stav"},
+      "charge_status": {"name": "Stav nabijeni"},
+      "system_status": {"name": "Stav systemu"}
+    },
+    "button": {
+      "test_adapter": {"name": "Otestovat USB-CAN prevodnik"},
+      "test_charger": {"name": "Otestovat komunikaci s nabijeckou"}
+    },
+    "switch": {
+      "output": {"name": "Vystup"}
+    },
+    "number": {
+      "output_voltage_set": {"name": "Nastavit vystupni napeti"},
+      "output_current_set": {"name": "Nastavit vystupni proud"}
+    }
   }
 }

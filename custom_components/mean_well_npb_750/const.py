@@ -11,5 +11,5 @@ DEFAULT_ADDRESS = 0x03
 DEFAULT_CAN_BITRATE = 250000
 DEFAULT_SERIAL_BAUDRATE = 2000000
 DEFAULT_SCAN_INTERVAL = 10
-PLATFORMS = ["sensor", "switch", "number"]
+PLATFORMS = ["sensor", "switch", "number", "button"]
 ATTR_RAW_VALUE = "raw_value"

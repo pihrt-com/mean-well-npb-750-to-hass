@@ -26,6 +26,10 @@ class MeanWellOperationSwitch(MeanWellEntity, SwitchEntity):
         value = self.coordinator.data.get("operation")
         return bool(value) if value is not None else None
 
+    @property
+    def available(self) -> bool:
+        return super().available and bool(self.coordinator.data.get("charger_connected"))
+
     async def async_turn_on(self, **kwargs) -> None:
         await self.coordinator.async_set_operation(True)
 

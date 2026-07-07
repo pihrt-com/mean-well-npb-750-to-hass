@@ -26,6 +26,11 @@ SENSORS: tuple[MeanWellSensorDescription, ...] = tuple(
     MeanWellSensorDescription(key=r.key, translation_key=r.key, name=r.name, native_unit_of_measurement=UNIT_MAP.get(r.unit or ""), device_class=DEVICE_CLASS_MAP.get(r.unit or ""), state_class=SensorStateClass.MEASUREMENT if r.unit else None, suggested_display_precision=r.precision if r.unit else None, raw_key=r.key)
     for r in READ_REGISTERS
 ) + (
+    MeanWellSensorDescription(key="adapter_status", translation_key="adapter_status", name="USB-CAN adapter status"),
+    MeanWellSensorDescription(key="charger_status", translation_key="charger_status", name="Charger status"),
+    MeanWellSensorDescription(key="last_error", translation_key="last_error", name="Last communication message"),
+    MeanWellSensorDescription(key="can_settings", translation_key="can_settings", name="CAN settings"),
+    MeanWellSensorDescription(key="device_path", translation_key="device_path", name="Serial device"),
     MeanWellSensorDescription(key="faults", translation_key="faults", name="Faults"),
     MeanWellSensorDescription(key="charge_flags", translation_key="charge_flags", name="Charge flags"),
 )
@@ -46,6 +51,8 @@ class MeanWellSensor(MeanWellEntity, SensorEntity):
         value = self.coordinator.data.get(self.entity_description.key)
         if isinstance(value, list):
             return ", ".join(value) if value else "ok"
+        if value is None and self.entity_description.key == "last_error":
+            return "ok"
         return value
 
     @property

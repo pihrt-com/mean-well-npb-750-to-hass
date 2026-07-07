@@ -11,7 +11,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
 from .charger import ChargerIdentity, MeanWellNpbCharger
-from .commands import CHARGE_STATUS_BITS, FAULT_BITS, READ_REGISTERS
+from .commands import CHARGE_STATUS_BITS, FAULT_BITS, READ_REGISTERS, SYSTEM_STATUS_BITS
 from .const import CONF_ADDRESS, CONF_CAN_BITRATE, CONF_SERIAL_BAUDRATE, DEFAULT_ADDRESS, DEFAULT_CAN_BITRATE, DEFAULT_SCAN_INTERVAL, DEFAULT_SERIAL_BAUDRATE
 from .waveshare import WaveshareUsbCan
 
@@ -57,8 +57,16 @@ class MeanWellCoordinator(DataUpdateCoordinator[dict[str, object]]):
                 _LOGGER.debug("Could not read operation state: %s", err)
             fault_status = int(data.get("fault_status", 0))
             charge_status = int(data.get("charge_status", 0))
-            data["faults"] = [name for bit, name in FAULT_BITS.items() if fault_status & (1 << bit)]
-            data["charge_flags"] = [name for bit, name in CHARGE_STATUS_BITS.items() if charge_status & (1 << bit)]
+            system_status = int(data.get("system_status", 0))
+            fault_flags = _decode_bits(fault_status, FAULT_BITS)
+            charge_flags = _decode_bits(charge_status, CHARGE_STATUS_BITS)
+            system_flags = _decode_system_status(system_status)
+            data["fault_status"] = _join_flags(fault_flags, "Bez chyb")
+            data["charge_status"] = _join_flags(charge_flags, "Bez aktivnich priznaku nabijeni")
+            data["system_status"] = _join_flags(system_flags, "Bez aktivnich systemovych priznaku")
+            data["faults"] = fault_flags
+            data["charge_flags"] = charge_flags
+            data["system_flags"] = system_flags
             data["charger_connected"] = True
             data["charger_status"] = "Nabijecka MEAN WELL odpovida na CAN"
             data["last_error"] = None
@@ -72,6 +80,7 @@ class MeanWellCoordinator(DataUpdateCoordinator[dict[str, object]]):
             )
             data["faults"] = []
             data["charge_flags"] = []
+            data["system_flags"] = []
         data["raw"] = raw
         return data
 
@@ -112,3 +121,17 @@ class MeanWellCoordinator(DataUpdateCoordinator[dict[str, object]]):
     async def async_set_current(self, value: float) -> None:
         await asyncio.to_thread(self.charger.set_output_current, value)
         await self.async_request_refresh()
+
+
+def _decode_bits(value: int, labels: dict[int, str]) -> list[str]:
+    return [label for bit, label in labels.items() if value & (1 << bit)]
+
+
+def _decode_system_status(value: int) -> list[str]:
+    flags = ["DC vystup v normalnim rozsahu" if value & (1 << 1) else "DC vystup je prilis nizky"]
+    flags.extend(_decode_bits(value, SYSTEM_STATUS_BITS))
+    return flags
+
+
+def _join_flags(flags: list[str], empty: str) -> str:
+    return ", ".join(flags) if flags else empty

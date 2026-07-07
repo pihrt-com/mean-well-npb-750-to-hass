@@ -22,6 +22,7 @@
       "device_path": {"name": "Serial device"},
       "faults": {"name": "Faults"},
       "charge_flags": {"name": "Charge flags"},
+      "system_flags": {"name": "System flags"},
       "output_voltage": {"name": "Output voltage"},
       "output_current": {"name": "Output current"},
       "temperature": {"name": "Internal temperature"},

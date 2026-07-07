@@ -58,5 +58,28 @@ READ_REGISTERS: tuple[Register, ...] = (
     Register("charge_status", "Charge status", Command.CHG_STATUS, 1, None, 0),
     Register("system_status", "System status", Command.SYSTEM_STATUS, 1, None, 0),
 )
-FAULT_BITS = {1: "otp", 2: "ovp", 3: "olp", 4: "short", 5: "ac_fail", 6: "output_off", 7: "high_temperature"}
-CHARGE_STATUS_BITS = {0: "full", 1: "cc_mode", 2: "cv_mode", 3: "float_mode", 5: "stop", 10: "button_control", 13: "cc_timeout", 14: "cv_timeout", 15: "float_timeout"}
+FAULT_BITS = {
+    1: "Prehrati nabijecky",
+    2: "Prepeti na vystupu",
+    3: "Nadproud na vystupu",
+    4: "Zkrat na vystupu",
+    5: "Chyba AC napajeni",
+    6: "Vystup vypnuty",
+    7: "Vysoka vnitrni teplota",
+}
+CHARGE_STATUS_BITS = {
+    0: "Baterie plne nabita",
+    1: "Rezim konstantniho proudu",
+    2: "Rezim konstantniho napeti",
+    3: "Udrzovaci nabijeni",
+    6: "Probuzeni neni dokonceno",
+    10: "Zkrat teplotni kompenzace",
+    11: "Baterie nedetekovana",
+    13: "Vyprsel cas konstantniho proudu",
+    14: "Vyprsel cas konstantniho napeti",
+    15: "Vyprsel cas udrzovaciho nabijeni",
+}
+SYSTEM_STATUS_BITS = {
+    5: "Inicializace",
+    6: "Chyba EEPROM",
+}

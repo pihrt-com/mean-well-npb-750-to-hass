@@ -158,13 +158,13 @@ def _decode_system_status(value: int) -> list[str]:
 
 
 def _decode_curve_config(value: int) -> str:
-    mode = "Rezim nabijecky" if value & (1 << 7) else "Rezim zdroje"
-    return f"{mode}, raw 0x{value:04X}"
+    flags = ["Rezim nabijecky" if value & (1 << 7) else "Rezim zdroje"]
+    flags.append("Automaticky restart nabijeni povolen" if value & 0x0800 else "Automaticky restart nabijeni vypnuty")
+    return f"{', '.join(flags)}, raw 0x{value:04X}"
 
 
 def _decode_system_config(value: int) -> str:
     flags = []
-    flags.append("Automaticky restart nabijeni povolen" if value & (1 << 3) else "Automaticky restart nabijeni vypnuty")
     if value & (1 << 10):
         flags.append("Zapis do EEPROM vypnuty")
     else:

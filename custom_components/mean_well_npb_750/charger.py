@@ -81,11 +81,11 @@ class MeanWellNpbCharger:
         self.write_operation(True)
 
     def enable_automatic_recharge(self) -> int:
-        """Enable RSTE in SYSTEM_CONFIG and return the written value."""
+        """Enable RSTE in CURVE_CONFIG and return the written value."""
 
-        system_config = self.read_register(Command.SYSTEM_CONFIG, 2)
-        updated = system_config | 0x0008
-        self.write_register(Command.SYSTEM_CONFIG, updated.to_bytes(2, "little"))
+        curve_config = self.read_register(Command.CURVE_CONFIG, 2)
+        updated = curve_config | 0x0800
+        self.write_register(Command.CURVE_CONFIG, updated.to_bytes(2, "little"))
         sleep(0.2)
         return updated
 

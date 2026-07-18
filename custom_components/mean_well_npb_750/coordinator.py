@@ -134,6 +134,10 @@ class MeanWellCoordinator(DataUpdateCoordinator[dict[str, object]]):
         await asyncio.to_thread(self.charger.restart_charging, force=True)
         await self.async_request_refresh()
 
+    async def async_enable_automatic_recharge(self) -> None:
+        await asyncio.to_thread(self.charger.enable_automatic_recharge)
+        await self.async_request_refresh()
+
     async def async_set_voltage(self, value: float) -> None:
         await asyncio.to_thread(self.charger.set_output_voltage, value)
         await self.async_request_refresh()

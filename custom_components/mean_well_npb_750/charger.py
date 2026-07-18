@@ -80,6 +80,15 @@ class MeanWellNpbCharger:
             sleep(1.0)
         self.write_operation(True)
 
+    def enable_automatic_recharge(self) -> int:
+        """Enable RSTE in SYSTEM_CONFIG and return the written value."""
+
+        system_config = self.read_register(Command.SYSTEM_CONFIG, 2)
+        updated = system_config | 0x0008
+        self.write_register(Command.SYSTEM_CONFIG, updated.to_bytes(2, "little"))
+        sleep(0.2)
+        return updated
+
     def set_output_voltage(self, volts: float) -> None:
         self.write_register(Command.VOUT_SET, int(round(volts / 0.01)).to_bytes(2, "little"))
 

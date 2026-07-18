@@ -38,7 +38,8 @@
       "test_adapter": {"name": "Otestovat USB-CAN prevodnik"},
       "test_charger": {"name": "Otestovat komunikaci s nabijeckou"},
       "restart_charging": {"name": "Restartovat nabijeni"},
-      "force_charging": {"name": "Vynutit start nabijeni"}
+      "force_charging": {"name": "Vynutit start nabijeni"},
+      "enable_automatic_recharge": {"name": "Povolit automaticky restart nabijeni"}
     },
     "switch": {
       "output": {"name": "Vystup"}

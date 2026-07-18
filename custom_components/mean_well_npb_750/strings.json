@@ -38,7 +38,8 @@
       "test_adapter": {"name": "Test USB-CAN adapter"},
       "test_charger": {"name": "Test charger communication"},
       "restart_charging": {"name": "Restart charging"},
-      "force_charging": {"name": "Force charging start"}
+      "force_charging": {"name": "Force charging start"},
+      "enable_automatic_recharge": {"name": "Enable automatic recharge"}
     },
     "switch": {
       "output": {"name": "Output"}

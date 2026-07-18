@@ -44,6 +44,12 @@ BUTTONS: tuple[MeanWellButtonDescription, ...] = (
         name="Force charging start",
         method="async_force_charging",
     ),
+    MeanWellButtonDescription(
+        key="enable_automatic_recharge",
+        translation_key="enable_automatic_recharge",
+        name="Enable automatic recharge",
+        method="async_enable_automatic_recharge",
+    ),
 )
 
 

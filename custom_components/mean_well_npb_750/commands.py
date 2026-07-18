@@ -57,6 +57,9 @@ READ_REGISTERS: tuple[Register, ...] = (
     Register("fault_status", "Fault status", Command.FAULT_STATUS, 1, None, 0),
     Register("charge_status", "Charge status", Command.CHG_STATUS, 1, None, 0),
     Register("system_status", "System status", Command.SYSTEM_STATUS, 1, None, 0),
+    Register("recharge_voltage", "Recharge voltage", Command.CHG_RST_VBAT, 0.01, "V", 2),
+    Register("curve_config", "Curve config", Command.CURVE_CONFIG, 1, None, 0),
+    Register("system_config", "System config", Command.SYSTEM_CONFIG, 1, None, 0),
 )
 FAULT_BITS = {
     1: "Prehrati nabijecky",

@@ -28,11 +28,17 @@
       "temperature": {"name": "Vnitrni teplota"},
       "fault_status": {"name": "Chybovy stav"},
       "charge_status": {"name": "Stav nabijeni"},
-      "system_status": {"name": "Stav systemu"}
+      "system_status": {"name": "Stav systemu"},
+      "recharge_voltage": {"name": "Napeti pro znovuzahajeni nabijeni"},
+      "curve_config": {"name": "Nastaveni nabijeci krivky"},
+      "system_config": {"name": "Systemova konfigurace"},
+      "charging_attention": {"name": "Upozorneni nabijeni"}
     },
     "button": {
       "test_adapter": {"name": "Otestovat USB-CAN prevodnik"},
-      "test_charger": {"name": "Otestovat komunikaci s nabijeckou"}
+      "test_charger": {"name": "Otestovat komunikaci s nabijeckou"},
+      "restart_charging": {"name": "Restartovat nabijeni"},
+      "force_charging": {"name": "Vynutit start nabijeni"}
     },
     "switch": {
       "output": {"name": "Vystup"}

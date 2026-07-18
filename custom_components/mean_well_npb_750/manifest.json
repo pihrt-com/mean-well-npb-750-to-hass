@@ -6,5 +6,5 @@
   "documentation": "https://github.com/pihrt-com/mean-well-npb-750-to-hass",
   "iot_class": "local_polling",
   "requirements": ["pyserial==3.5"],
-  "version": "0.1.4"
+  "version": "0.1.7"
 }

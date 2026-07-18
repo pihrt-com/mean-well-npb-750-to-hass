@@ -32,6 +32,18 @@ BUTTONS: tuple[MeanWellButtonDescription, ...] = (
         name="Test charger communication",
         method="async_test_charger",
     ),
+    MeanWellButtonDescription(
+        key="restart_charging",
+        translation_key="restart_charging",
+        name="Restart charging",
+        method="async_restart_charging",
+    ),
+    MeanWellButtonDescription(
+        key="force_charging",
+        translation_key="force_charging",
+        name="Force charging start",
+        method="async_force_charging",
+    ),
 )
 
 

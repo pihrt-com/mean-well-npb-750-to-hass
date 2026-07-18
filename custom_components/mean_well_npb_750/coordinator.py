@@ -58,15 +58,20 @@ class MeanWellCoordinator(DataUpdateCoordinator[dict[str, object]]):
             fault_status = int(data.get("fault_status", 0))
             charge_status = int(data.get("charge_status", 0))
             system_status = int(data.get("system_status", 0))
+            curve_config = int(data.get("curve_config", 0))
+            system_config = int(data.get("system_config", 0))
             fault_flags = _decode_bits(fault_status, FAULT_BITS)
             charge_flags = _decode_bits(charge_status, CHARGE_STATUS_BITS)
             system_flags = _decode_system_status(system_status)
             data["fault_status"] = _join_flags(fault_flags, "Bez chyb")
             data["charge_status"] = _join_flags(charge_flags, "Bez aktivnich priznaku nabijeni")
             data["system_status"] = _join_flags(system_flags, "Bez aktivnich systemovych priznaku")
+            data["curve_config"] = _decode_curve_config(curve_config)
+            data["system_config"] = _decode_system_config(system_config)
             data["faults"] = fault_flags
             data["charge_flags"] = charge_flags
             data["system_flags"] = system_flags
+            data["charging_attention"] = _charging_attention(data, fault_flags, charge_flags)
             data["charger_connected"] = True
             data["charger_status"] = "Nabijecka MEAN WELL odpovida na CAN"
             data["last_error"] = None
@@ -81,6 +86,7 @@ class MeanWellCoordinator(DataUpdateCoordinator[dict[str, object]]):
             data["faults"] = []
             data["charge_flags"] = []
             data["system_flags"] = []
+            data["charging_attention"] = "Nabijecka neodpovida"
         data["raw"] = raw
         return data
 
@@ -111,7 +117,21 @@ class MeanWellCoordinator(DataUpdateCoordinator[dict[str, object]]):
         await self.async_request_refresh()
 
     async def async_set_operation(self, enabled: bool) -> None:
-        await asyncio.to_thread(self.charger.write_operation, enabled)
+        currently_enabled = bool((self.data or {}).get("operation"))
+        output_current = (self.data or {}).get("output_current")
+        current_is_zero = isinstance(output_current, int | float) and output_current < 0.1
+        if enabled and (not currently_enabled or current_is_zero):
+            await asyncio.to_thread(self.charger.restart_charging, force=current_is_zero)
+        else:
+            await asyncio.to_thread(self.charger.write_operation, enabled)
+        await self.async_request_refresh()
+
+    async def async_restart_charging(self) -> None:
+        await asyncio.to_thread(self.charger.restart_charging)
+        await self.async_request_refresh()
+
+    async def async_force_charging(self) -> None:
+        await asyncio.to_thread(self.charger.restart_charging, force=True)
         await self.async_request_refresh()
 
     async def async_set_voltage(self, value: float) -> None:
@@ -131,6 +151,33 @@ def _decode_system_status(value: int) -> list[str]:
     flags = ["DC vystup v normalnim rozsahu" if value & (1 << 1) else "DC vystup je prilis nizky"]
     flags.extend(_decode_bits(value, SYSTEM_STATUS_BITS))
     return flags
+
+
+def _decode_curve_config(value: int) -> str:
+    mode = "Rezim nabijecky" if value & (1 << 7) else "Rezim zdroje"
+    return f"{mode}, raw 0x{value:04X}"
+
+
+def _decode_system_config(value: int) -> str:
+    flags = []
+    flags.append("Automaticky restart nabijeni povolen" if value & (1 << 3) else "Automaticky restart nabijeni vypnuty")
+    if value & (1 << 10):
+        flags.append("Zapis do EEPROM vypnuty")
+    else:
+        flags.append("Zapis do EEPROM povoleny")
+    return f"{', '.join(flags)}, raw 0x{value:04X}"
+
+
+def _charging_attention(data: dict[str, object], fault_flags: list[str], charge_flags: list[str]) -> str:
+    operation = data.get("operation")
+    output_current = data.get("output_current")
+    if operation is not True or not isinstance(output_current, int | float) or output_current >= 0.1:
+        return "ok"
+    if fault_flags:
+        return f"Vystup je zapnuty, ale proud netece. Chybove priznaky: {', '.join(fault_flags)}"
+    if charge_flags:
+        return f"Vystup je zapnuty, ale proud netece. Priznaky nabijeni: {', '.join(charge_flags)}"
+    return "Vystup je zapnuty, ale proud netece. Nabijecka muze byt v ochrannem nebo latch stavu; pokud nepomuze Vynutit start nabijeni, muze byt nutny AC re-power."
 
 
 def _join_flags(flags: list[str], empty: str) -> str:

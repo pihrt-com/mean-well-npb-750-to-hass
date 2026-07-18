@@ -28,11 +28,17 @@
       "temperature": {"name": "Internal temperature"},
       "fault_status": {"name": "Fault status"},
       "charge_status": {"name": "Charge status"},
-      "system_status": {"name": "System status"}
+      "system_status": {"name": "System status"},
+      "recharge_voltage": {"name": "Recharge voltage"},
+      "curve_config": {"name": "Curve config"},
+      "system_config": {"name": "System config"},
+      "charging_attention": {"name": "Charging attention"}
     },
     "button": {
       "test_adapter": {"name": "Test USB-CAN adapter"},
-      "test_charger": {"name": "Test charger communication"}
+      "test_charger": {"name": "Test charger communication"},
+      "restart_charging": {"name": "Restart charging"},
+      "force_charging": {"name": "Force charging start"}
     },
     "switch": {
       "output": {"name": "Output"}

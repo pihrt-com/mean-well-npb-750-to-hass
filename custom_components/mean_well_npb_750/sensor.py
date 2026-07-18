@@ -34,6 +34,7 @@ SENSORS: tuple[MeanWellSensorDescription, ...] = tuple(
     MeanWellSensorDescription(key="faults", translation_key="faults", name="Faults"),
     MeanWellSensorDescription(key="charge_flags", translation_key="charge_flags", name="Charge flags"),
     MeanWellSensorDescription(key="system_flags", translation_key="system_flags", name="System flags"),
+    MeanWellSensorDescription(key="charging_attention", translation_key="charging_attention", name="Charging attention"),
 )
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_entities) -> None:

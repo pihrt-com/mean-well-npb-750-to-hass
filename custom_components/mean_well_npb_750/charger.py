@@ -68,6 +68,18 @@ class MeanWellNpbCharger:
     def write_operation(self, enabled: bool) -> None:
         self.write_register(Command.OPERATION, bytes([0x01 if enabled else 0x00]))
 
+    def restart_charging(self, *, force: bool = False) -> None:
+        """Pulse remote operation off/on to restart charger-mode charging."""
+
+        self.write_operation(False)
+        sleep(2.0 if force else 1.0)
+        self.write_operation(True)
+        if force:
+            sleep(3.0)
+            self.write_operation(False)
+            sleep(1.0)
+        self.write_operation(True)
+
     def set_output_voltage(self, volts: float) -> None:
         self.write_register(Command.VOUT_SET, int(round(volts / 0.01)).to_bytes(2, "little"))
 

@@ -12,7 +12,7 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
 from .charger import ChargerIdentity, MeanWellNpbCharger
 from .commands import CHARGE_STATUS_BITS, FAULT_BITS, READ_REGISTERS, SYSTEM_STATUS_BITS
-from .const import CONF_ADDRESS, CONF_CAN_BITRATE, CONF_SERIAL_BAUDRATE, DEFAULT_ADDRESS, DEFAULT_CAN_BITRATE, DEFAULT_SCAN_INTERVAL, DEFAULT_SERIAL_BAUDRATE
+from .const import CONF_ADDRESS, CONF_CAN_BITRATE, CONF_OUTPUT_CURRENT_SETPOINT, CONF_OUTPUT_VOLTAGE_SETPOINT, CONF_SERIAL_BAUDRATE, DEFAULT_ADDRESS, DEFAULT_CAN_BITRATE, DEFAULT_SCAN_INTERVAL, DEFAULT_SERIAL_BAUDRATE
 from .waveshare import WaveshareUsbCan
 
 _LOGGER = logging.getLogger(__name__)
@@ -27,6 +27,7 @@ class MeanWellCoordinator(DataUpdateCoordinator[dict[str, object]]):
         self.serial_baudrate = entry.data.get(CONF_SERIAL_BAUDRATE, DEFAULT_SERIAL_BAUDRATE)
         self.can_bitrate = entry.data.get(CONF_CAN_BITRATE, DEFAULT_CAN_BITRATE)
         self.address = entry.data.get(CONF_ADDRESS, DEFAULT_ADDRESS)
+        self._last_applied_setpoints: tuple[float | None, float | None] | None = None
         self.charger = MeanWellNpbCharger(WaveshareUsbCan(self.device, self.serial_baudrate, self.can_bitrate), self.address)
         super().__init__(hass, _LOGGER, name="Mean Well NPB-750", update_interval=timedelta(seconds=entry.options.get("scan_interval", DEFAULT_SCAN_INTERVAL)))
 
@@ -72,11 +73,14 @@ class MeanWellCoordinator(DataUpdateCoordinator[dict[str, object]]):
             data["charge_flags"] = charge_flags
             data["system_flags"] = system_flags
             data["charging_attention"] = _charging_attention(data, fault_flags, charge_flags)
+            if not curve_config & 0x0080:
+                self._apply_saved_power_supply_setpoints(data)
             data["charger_connected"] = True
             data["charger_status"] = "Nabijecka MEAN WELL odpovida na CAN"
             data["last_error"] = None
         except Exception as err:  # noqa: BLE001
             _LOGGER.debug("Charger did not answer: %s", err)
+            self._last_applied_setpoints = None
             data["charger_connected"] = False
             data["charger_status"] = "Nabijecka MEAN WELL neodpovida na CAN"
             data["last_error"] = (
@@ -149,20 +153,54 @@ class MeanWellCoordinator(DataUpdateCoordinator[dict[str, object]]):
 
     async def async_set_power_supply_mode(self, enabled: bool) -> None:
         await asyncio.to_thread(self.charger.set_power_supply_mode, enabled)
+        self._last_applied_setpoints = None
         await self.async_request_refresh()
         self.hass.async_create_task(self.hass.config_entries.async_reload(self.entry.entry_id))
 
     async def async_set_voltage(self, value: float) -> None:
         await asyncio.to_thread(self.charger.set_output_voltage, value)
+        self._save_setpoint(CONF_OUTPUT_VOLTAGE_SETPOINT, value)
+        self._last_applied_setpoints = None
         await self.async_request_refresh()
 
     async def async_set_current(self, value: float) -> None:
         await asyncio.to_thread(self.charger.set_output_current, value)
+        self._save_setpoint(CONF_OUTPUT_CURRENT_SETPOINT, value)
+        self._last_applied_setpoints = None
         await self.async_request_refresh()
+
+    def saved_voltage_setpoint(self) -> float | None:
+        return _option_float(self.entry.options.get(CONF_OUTPUT_VOLTAGE_SETPOINT))
+
+    def saved_current_setpoint(self) -> float | None:
+        return _option_float(self.entry.options.get(CONF_OUTPUT_CURRENT_SETPOINT))
+
+    def _save_setpoint(self, key: str, value: float) -> None:
+        options = dict(self.entry.options)
+        options[key] = round(float(value), 2)
+        self.hass.config_entries.async_update_entry(self.entry, options=options)
+
+    def _apply_saved_power_supply_setpoints(self, data: dict[str, object]) -> None:
+        voltage = self.saved_voltage_setpoint()
+        current = self.saved_current_setpoint()
+        setpoints = (voltage, current)
+        output_voltage = data.get("output_voltage")
+        voltage_mismatch = isinstance(output_voltage, int | float) and voltage is not None and abs(output_voltage - voltage) > 0.05
+        if setpoints == self._last_applied_setpoints and not voltage_mismatch:
+            return
+        if voltage is not None:
+            self.charger.set_output_voltage(voltage)
+        if current is not None:
+            self.charger.set_output_current(current)
+        self._last_applied_setpoints = setpoints
 
 
 def _decode_bits(value: int, labels: dict[int, str]) -> list[str]:
     return [label for bit, label in labels.items() if value & (1 << bit)]
+
+
+def _option_float(value: object) -> float | None:
+    return float(value) if isinstance(value, int | float) else None
 
 
 def _decode_system_status(value: int) -> list[str]:

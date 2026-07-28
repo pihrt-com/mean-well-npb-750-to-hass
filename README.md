@@ -206,6 +206,15 @@ Power-supply mode provides constant-voltage output. In this mode the normal cont
 
 The MEAN WELL manual states that `VOUT_SET` (`0x0020`) and `IOUT_SET` (`0x0030`) take effect immediately in power-supply mode after successful CAN transmission.
 
+The integration stores the last requested voltage and current setpoints in the Home Assistant config entry. When the unit is in power-supply mode, these saved setpoints are applied again after integration startup or after the charger reconnects. This is useful because some units may return to their own internal/default values after AC power is removed and restored.
+
+The measured entities and setpoint entities are intentionally different:
+
+- `Output voltage` is the voltage currently read from the charger.
+- `Output current` is the current currently read from the charger.
+- `Output voltage set` is the requested voltage that Home Assistant should keep applying in power-supply mode.
+- `Output current set` is the requested current limit that Home Assistant should keep applying in power-supply mode.
+
 ## Protocol Notes
 
 MEAN WELL CAN identifiers:

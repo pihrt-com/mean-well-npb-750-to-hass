@@ -35,6 +35,14 @@ class MeanWellNumber(MeanWellEntity, NumberEntity):
 
     @property
     def native_value(self) -> float | None:
+        if self.entity_description.key == "output_voltage_set":
+            saved_voltage = self.coordinator.saved_voltage_setpoint()
+            if saved_voltage is not None:
+                return saved_voltage
+        if self.entity_description.key == "output_current_set":
+            saved_current = self.coordinator.saved_current_setpoint()
+            if saved_current is not None:
+                return saved_current
         value = self.coordinator.data.get("output_voltage" if self.entity_description.key == "output_voltage_set" else "output_current")
         return float(value) if isinstance(value, int | float) else None
 

@@ -19,7 +19,7 @@ class MeanWellButtonDescription(ButtonEntityDescription):
     method: str
 
 
-BUTTONS: tuple[MeanWellButtonDescription, ...] = (
+COMMON_BUTTONS: tuple[MeanWellButtonDescription, ...] = (
     MeanWellButtonDescription(
         key="test_adapter",
         translation_key="test_adapter",
@@ -32,6 +32,9 @@ BUTTONS: tuple[MeanWellButtonDescription, ...] = (
         name="Test charger communication",
         method="async_test_charger",
     ),
+)
+
+CHARGER_BUTTONS: tuple[MeanWellButtonDescription, ...] = (
     MeanWellButtonDescription(
         key="restart_charging",
         translation_key="restart_charging",
@@ -55,7 +58,10 @@ BUTTONS: tuple[MeanWellButtonDescription, ...] = (
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_entities) -> None:
     coordinator: MeanWellCoordinator = hass.data[DOMAIN][entry.entry_id]
-    async_add_entities(MeanWellButton(coordinator, description) for description in BUTTONS)
+    descriptions = COMMON_BUTTONS
+    if coordinator.is_charger_mode:
+        descriptions += CHARGER_BUTTONS
+    async_add_entities(MeanWellButton(coordinator, description) for description in descriptions)
 
 
 class MeanWellButton(MeanWellEntity, ButtonEntity):

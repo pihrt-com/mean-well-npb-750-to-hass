@@ -102,6 +102,15 @@ class MeanWellCoordinator(DataUpdateCoordinator[dict[str, object]]):
             "serial_settings": f"Serial {self.serial_baudrate} bit/s",
         }
 
+    @property
+    def is_charger_mode(self) -> bool:
+        raw = (self.data or {}).get("raw", {})
+        if isinstance(raw, dict):
+            curve_config = raw.get("curve_config")
+            if isinstance(curve_config, int):
+                return bool(curve_config & 0x0080)
+        return True
+
     async def async_test_adapter(self) -> None:
         await asyncio.to_thread(self.charger.configure_adapter)
         self.async_set_updated_data(
@@ -141,6 +150,7 @@ class MeanWellCoordinator(DataUpdateCoordinator[dict[str, object]]):
     async def async_set_power_supply_mode(self, enabled: bool) -> None:
         await asyncio.to_thread(self.charger.set_power_supply_mode, enabled)
         await self.async_request_refresh()
+        self.hass.async_create_task(self.hass.config_entries.async_reload(self.entry.entry_id))
 
     async def async_set_voltage(self, value: float) -> None:
         await asyncio.to_thread(self.charger.set_output_voltage, value)

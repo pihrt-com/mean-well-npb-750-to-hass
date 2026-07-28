@@ -37,9 +37,15 @@ SENSORS: tuple[MeanWellSensorDescription, ...] = tuple(
     MeanWellSensorDescription(key="charging_attention", translation_key="charging_attention", name="Charging attention"),
 )
 
+CHARGER_ONLY_SENSOR_KEYS = {"recharge_voltage", "charging_attention"}
+
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_entities) -> None:
     coordinator: MeanWellCoordinator = hass.data[DOMAIN][entry.entry_id]
-    async_add_entities(MeanWellSensor(coordinator, description) for description in SENSORS)
+    async_add_entities(
+        MeanWellSensor(coordinator, description)
+        for description in SENSORS
+        if coordinator.is_charger_mode or description.key not in CHARGER_ONLY_SENSOR_KEYS
+    )
 
 class MeanWellSensor(MeanWellEntity, SensorEntity):
     entity_description: MeanWellSensorDescription

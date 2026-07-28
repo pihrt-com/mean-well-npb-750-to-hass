@@ -143,19 +143,68 @@ Serial baudrate: 2000000
 
 The integration creates:
 
+- operating mode select: `Charger` / `Power supply`
 - output voltage sensor
 - output current sensor
 - internal temperature sensor
 - fault status sensor
-- charge status sensor
 - system status sensor
 - output on/off switch
 - output voltage setpoint number entity
 - output current setpoint number entity
 
+In charger mode it also creates charger-specific diagnostics and actions:
+
+- charge status sensor
+- automatic recharge voltage sensor
+- charging attention sensor
+- restart charging button
+- force charging start button
+- enable automatic recharge button
+
+These charger-specific entities are not created while the unit is in power-supply mode, because they do not apply to normal PSU operation.
+
 Note: according to the MEAN WELL manual, `VOUT_SET` and `IOUT_SET` are mainly useful in power-supply mode. In charger mode, the charger may ignore some setpoint commands depending on its current configuration.
 
 The NPB-750 command table marks `READ_VIN` (`0x0050`) as unsupported/problematic for this model family, so input voltage is not polled by default.
+
+## Operating Modes
+
+The NPB-750 can operate either as a battery charger or as a DC power supply.
+
+The integration exposes this as an operating mode select:
+
+```text
+Charger
+Power supply
+```
+
+Internally this writes `CURVE_CONFIG` (`0x00B4`) bit 7 in the low byte:
+
+```text
+1 = charger mode
+0 = power-supply mode
+```
+
+The integration preserves the other `CURVE_CONFIG` bits when changing this mode.
+
+Important: the MEAN WELL manual states that `0x00B4` mode-related changes only take effect after AC power is applied again. After changing between charger mode and power-supply mode in Home Assistant, power-cycle the AC input of the NPB-750 if the physical behavior does not change immediately.
+
+### Charger Mode
+
+Charger mode is the default MEAN WELL mode. The unit follows the configured charging curve and exposes charger-specific status such as charge stage, automatic recharge voltage, and charging restart controls.
+
+### Power-Supply Mode
+
+Power-supply mode provides constant-voltage output. In this mode the normal controls are:
+
+- output on/off switch
+- output voltage setpoint
+- output current setpoint
+- output voltage/current monitoring
+- temperature and status monitoring
+
+The MEAN WELL manual states that `VOUT_SET` (`0x0020`) and `IOUT_SET` (`0x0030`) take effect immediately in power-supply mode after successful CAN transmission.
 
 ## Protocol Notes
 

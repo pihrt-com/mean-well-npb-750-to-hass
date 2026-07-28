@@ -47,6 +47,9 @@
     "number": {
       "output_voltage_set": {"name": "Nastavit vystupni napeti"},
       "output_current_set": {"name": "Nastavit vystupni proud"}
+    },
+    "select": {
+      "operating_mode": {"name": "Rezim"}
     }
   }
 }

@@ -47,6 +47,9 @@
     "number": {
       "output_voltage_set": {"name": "Output voltage set"},
       "output_current_set": {"name": "Output current set"}
+    },
+    "select": {
+      "operating_mode": {"name": "Operating mode"}
     }
   }
 }

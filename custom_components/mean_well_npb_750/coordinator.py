@@ -138,6 +138,10 @@ class MeanWellCoordinator(DataUpdateCoordinator[dict[str, object]]):
         await asyncio.to_thread(self.charger.enable_automatic_recharge)
         await self.async_request_refresh()
 
+    async def async_set_power_supply_mode(self, enabled: bool) -> None:
+        await asyncio.to_thread(self.charger.set_power_supply_mode, enabled)
+        await self.async_request_refresh()
+
     async def async_set_voltage(self, value: float) -> None:
         await asyncio.to_thread(self.charger.set_output_voltage, value)
         await self.async_request_refresh()
@@ -160,6 +164,7 @@ def _decode_system_status(value: int) -> list[str]:
 def _decode_curve_config(value: int) -> str:
     flags = ["Rezim nabijecky" if value & (1 << 7) else "Rezim zdroje"]
     flags.append("Automaticky restart nabijeni povolen" if value & 0x0800 else "Automaticky restart nabijeni vypnuty")
+    flags.append("Zmena rezimu se muze projevit az po AC restartu")
     return f"{', '.join(flags)}, raw 0x{value:04X}"
 
 

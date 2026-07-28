@@ -89,6 +89,17 @@ class MeanWellNpbCharger:
         sleep(0.2)
         return updated
 
+    def set_power_supply_mode(self, enabled: bool) -> int:
+        """Switch between charger mode and power-supply mode."""
+
+        curve_config = self.read_register(Command.CURVE_CONFIG, 2)
+        updated = curve_config & ~0x0080 if enabled else curve_config | 0x0080
+        self.write_operation(False)
+        sleep(0.2)
+        self.write_register(Command.CURVE_CONFIG, updated.to_bytes(2, "little"))
+        sleep(0.2)
+        return updated
+
     def set_output_voltage(self, volts: float) -> None:
         self.write_register(Command.VOUT_SET, int(round(volts / 0.01)).to_bytes(2, "little"))
 
